@@ -49,45 +49,10 @@ for private_key in keys_list:
 
     polygon_ac = 0
     BSC_ac = 0
-    while True:
 
-        web3 = Web3(Web3.HTTPProvider('https://polygon-rpc.com/', request_kwargs=config.request_kwargs))
-        zkMessenger_address = Web3.to_checksum_address(address['polygon']['zkMessenger'])
-        mailer = web3.eth.contract(address=zkMessenger_address, abi=send_messadge_abi)
-
-        if not mailer.functions.layerZeroPaused().call():
-            if polygon_ac == 0:
-                print(f'Polygon L0 активен...')
-                polygon_ac = 1
-        else:
-            if polygon_ac == 1:        
-                print(f'Polygon L0 не активен...')
-                polygon_ac = 0
-        
-
-        web3 = Web3(Web3.HTTPProvider('https://bscrpc.com', request_kwargs=config.request_kwargs))
-        zkMessenger_address = Web3.to_checksum_address(address['bsc']['zkMessenger'])
-        mailer = web3.eth.contract(address=zkMessenger_address, abi=send_messadge_abi)
-
-        if not mailer.functions.layerZeroPaused().call():
-            if BSC_ac == 0:
-                print(f'BSC L0 активен...')
-                BSC_ac = 1
-        else:
-            if BSC_ac == 1:
-                print(f'BSC L0 не активен...')
-                BSC_ac = 0
-
-        if BSC_ac+polygon_ac >=1:
-            break
-        time.sleep(120)
 
 
     networks_from = config.networks_from
-    if BSC_ac==0:
-        networks_from.remove('bsc')
-    if polygon_ac==0:
-        networks_from.remove('polygon')
     random.shuffle(networks_from)
 
     balance_USD = 0
@@ -115,13 +80,23 @@ for private_key in keys_list:
     log(f'Хочу отправить из {network_from} ->> в {network_to} ')
 
 
-    message = "Embrace the future of cross-chain interoperability on zkBridge! 🌈 "
+    message = "ZK light client is live on LayerZero! 🌈"
+    adapter_params = "0x00010000000000000000000000000000000000000000000000000000000000030d40"
     zkMessenger_address = Web3.to_checksum_address(address[network_from]['zkMessenger'])
     zkMessenger_contract = web3.eth.contract(address=zkMessenger_address, abi=send_messadge_abi)
 
     zkFee = zkMessenger_contract.functions.fees(address[network_to]['zk_chain_id']).call()
-    lzFee = zkMessenger_contract.functions.estimateLzFee(address[network_to]['lz_chain_id'], wallet, message).call()
-  
+    
+    lzFee = zkMessenger_contract.functions.estimateFee(
+        address[network_to]['zk_chain_id'],
+        wallet, 
+        message,
+        adapter_params
+        ).call()
+    
+    # print(zkFee)
+    # print(lzFee)
+    # exit()
 
     balance = 0
     balance = web3.eth.get_balance(wallet)
@@ -139,12 +114,9 @@ for private_key in keys_list:
             maxFeePerGas = maxPriorityFeePerGas + round(baseFee * config.gas_kef)
             transaction = zkMessenger_contract.functions.sendMessage(
                         address[network_to]['zk_chain_id'], 
-                        address[network_to]['zkDstAddress'], 
-                        address[network_to]['lz_chain_id'], 
-                        address[network_to]['lzDstAddress'], 
-                        lzFee, 
                         wallet,
-                        message
+                        message,
+                        adapter_params
                 ).build_transaction({
                 'from': wallet,
                 'value': lzFee+zkFee,
@@ -156,12 +128,9 @@ for private_key in keys_list:
             gasPrice = web3.eth.gas_price
             transaction = zkMessenger_contract.functions.sendMessage(
                         address[network_to]['zk_chain_id'], 
-                        address[network_to]['zkDstAddress'], 
-                        address[network_to]['lz_chain_id'], 
-                        address[network_to]['lzDstAddress'], 
-                        lzFee, 
                         wallet,
-                        message
+                        message,
+                        adapter_params
                 ).build_transaction({
                 'from': wallet,
                 'value': lzFee+zkFee,
