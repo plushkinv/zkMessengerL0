@@ -11,7 +11,7 @@ proxy_changeIPlink = "http:/5cce3b204"
 #то что ниже желательно настроить под себя
 networks_from = ['polygon', 'bsc']  # выберите сети откуда посылаем сообщение
 networks_bsc_to = ['polygon', 'nova', 'moonbeam']  # выберите сети куда , если из БСК
-networks_polygon_to = ['nova', 'fantom']  # выберите сети куда если из полигона
+networks_polygon_to = ['nova', 'fantom', 'celo', 'core']  # выберите сети куда если из полигона
 
 
 

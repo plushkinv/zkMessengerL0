@@ -102,6 +102,12 @@ address = {
         'lzDstAddress': '0xe6eb0b3A1b0c542aCCB40a86565786Fcf8a42EF0',
         'zkDstAddress': '0xAf83500eA01d098F4FEBE94d54a5Dc51C41e46eD',
     },
+    'celo': {
+        'zk_chain_id': 18,
+    },
+    'core': {
+        'zk_chain_id': 17,
+    },
 
 
 }
